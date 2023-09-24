@@ -1,0 +1,19 @@
+{{template "base" .}}
+
+{{define "title"}}User #{{.User.ID}}{{end}}
+
+{{define "main"}}
+    {{with .User}}
+    <div class="user">
+        <div class="metadata">
+            <strong>{{.FirstName}}</strong>
+            <strong>{{.LastName}}</strong>
+            <span>#{{.ID}}</span>
+        </div>
+        <pre><code>{{.Interests}}</code></pre>
+        <div class="metadata">
+            <time>CreatedAt: {{ .CreatedAt}}</time>
+        </div>
+    </div>
+    {{end}}
+{{end}}
