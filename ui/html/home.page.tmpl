@@ -14,8 +14,8 @@
             </tr>
             {{range .Users}}
                 <tr>
-                    <td><a href="/snippet/{{.ID}}">{{.FirstName}}</a></td>
-                    <td>{{ .CreatedAt}}</td>
+                    <td><a href="/user/{{.ID}}">{{.FirstName}}</a></td>
+                    <td>{{humanDate .CreatedAt}}</td>
                     <td>#{{.ID}}</td>
                 </tr>
             {{end}}

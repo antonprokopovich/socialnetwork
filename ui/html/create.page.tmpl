@@ -1,0 +1,35 @@
+{{template "base" .}}
+
+{{define "firstname"}}Create a New User{{end}}
+
+{{define  "main"}}
+    <form action="/user/register" method="POST">
+            <div>
+                <label>FirstName:</label>
+                <input type="text" name="first_name">
+            </div>
+            <div>
+                <label>LastName:</label>
+                <input type="text" name="last_name">
+            </div>
+            <div>
+                <label>Age:</label>
+                <input type="text" name="age">
+            </div>
+            <label for="gender">Gender:</label>
+              <input type='radio' name='gender' value='male'> Male
+              <input type='radio' name='gender' value='female'> Female
+            </select>
+            <div>
+                <label>City:</label>
+                <input type="text" name="city">
+            </div>
+            <div>
+                <label for="interests">Interests:</label>
+                <textarea name="interests" id="interests"></textarea>
+            </div>
+            <div>
+                <input type="submit" value="Register">
+            </div>
+</form>
+{{end}}

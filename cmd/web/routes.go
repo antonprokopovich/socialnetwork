@@ -1,15 +1,23 @@
 package main
 
-import "net/http"
+import (
+	"github.com/bmizerany/pat"
+	"github.com/justinas/alice"
+	"net/http"
+)
 
-func (app application) routes() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/user", app.showUser)
-	mux.HandleFunc("/user/register", app.registerUser)
+func (app application) routes() http.Handler {
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+
+	mux := pat.New()
+
+	mux.Get("/", http.HandlerFunc(app.home))
+	mux.Get("/user/register", http.HandlerFunc(app.registerUserForm))
+	mux.Post("/user/register", http.HandlerFunc(app.registerUser))
+	mux.Get("/user/:id", http.HandlerFunc(app.showUser))
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Get("/static/", http.StripPrefix("/static", fileServer))
 
-	return mux
+	return standardMiddleware.Then(mux)
 }

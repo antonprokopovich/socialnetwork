@@ -23,4 +23,6 @@ type User struct {
 	Gender    Gender    `json:"gender,omitempty"`
 	Interests string    `json:"interests,omitempty"`
 	City      string    `json:"city,omitempty"`
+	// Список ID пользователей, которых данный пользователь добавил в друзья.
+	Friends []int64 `json:"friends,omitempty"`
 }

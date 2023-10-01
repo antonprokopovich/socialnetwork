@@ -1,20 +1,14 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 	"social-network/internal/models"
 	"strconv"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-
-		return
-	}
-
 	users, err := app.users.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -26,7 +20,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 
@@ -40,6 +34,7 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			app.serverError(w, err)
 		}
+
 		return
 	}
 
@@ -47,27 +42,36 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
+	if err := r.ParseForm(); err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	firstName := r.PostForm.Get("first_name")
+	lastName := r.PostForm.Get("last_name")
+	interests := r.PostForm.Get("interests")
+	gender := r.PostForm.Get("gender")
+	city := r.PostForm.Get("city")
+	ageVal := r.PostForm.Get("age")
+
+	age, err := strconv.Atoi(ageVal)
+	if err != nil {
+		err = errors.Wrap(err, "gender value should be of int type")
+
+		app.serverError(w, err)
 
 		return
 	}
 
-	// Dummy data
-	firstName := "Alice"
-	lastName := "Doe"
-	interests := "sports, reading, science"
-	city := "Moscow"
-	gender := models.GenderFemale
-	age := uint32(28)
-
-	id, err := app.users.Insert(firstName, lastName, interests, city, gender, age)
+	id, err := app.users.Insert(firstName, lastName, interests, city, models.Gender(gender), uint32(age))
 	if err != nil {
 		app.serverError(w, err)
 
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/user?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/user/%d", id), http.StatusSeeOther)
+}
+
+func (app *application) registerUserForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "create.page.tmpl", nil)
 }
