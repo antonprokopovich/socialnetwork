@@ -8,11 +8,13 @@
         <div class="metadata">
             <strong>{{.FirstName}}</strong>
             <strong>{{.LastName}}</strong>
-            <span>#{{.ID}}</span>
         </div>
-        <pre><code>{{.Interests}}</code></pre>
+        <pre><code>Interests: {{.Interests}}</code></pre>
         <div class="metadata">
-            <time>CreatedAt: {{humanDate .CreatedAt}}</time>
+            <time>Registered At: {{humanDate .CreatedAt}}</time>
+        </div>
+        <div style="border: 2px solid #007bff; background-color: #f2f2f2; padding: 10px; width: 120px; text-align: center;">
+            <button class="add-friend-button">Add Friend</button>
         </div>
     </div>
     {{end}}

@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"social-network/internal/models"
+	"social-network/pkg/forms"
 	"strconv"
 )
 
@@ -38,7 +39,9 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, r, "show.page.tmpl", &templateData{User: u})
+	app.render(w, r, "show.page.tmpl", &templateData{
+		User: u,
+	})
 }
 
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
@@ -46,32 +49,44 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusBadRequest)
 	}
 
-	firstName := r.PostForm.Get("first_name")
-	lastName := r.PostForm.Get("last_name")
-	interests := r.PostForm.Get("interests")
-	gender := r.PostForm.Get("gender")
-	city := r.PostForm.Get("city")
-	ageVal := r.PostForm.Get("age")
+	form := forms.NewForm(r.PostForm)
+	form.Required("first_name", "last_name", "gender", "age", "city", "interests")
+	form.MaxLength("first_name", 50)
+	form.MaxLength("last_name", 50)
+	form.MaxLength("city", 50)
+	form.MaxLength("interests", 500)
+	form.PermittedValues("gender", "male", "female")
 
-	age, err := strconv.Atoi(ageVal)
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+
+		return
+	}
+
+	ageInput := form.Get("age")
+	age, _ := strconv.Atoi(ageInput)
+
+	id, err := app.users.Insert(
+		form.Get("first_name"),
+		form.Get("last_nae"),
+		form.Get("interests"),
+		form.Get("city"),
+		models.Gender(form.Get("gender")),
+		uint32(age),
+	)
 	if err != nil {
-		err = errors.Wrap(err, "gender value should be of int type")
-
 		app.serverError(w, err)
 
 		return
 	}
 
-	id, err := app.users.Insert(firstName, lastName, interests, city, models.Gender(gender), uint32(age))
-	if err != nil {
-		app.serverError(w, err)
-
-		return
-	}
+	app.session.Put(r, "flash", "User successfully registered!")
 
 	http.Redirect(w, r, fmt.Sprintf("/user/%d", id), http.StatusSeeOther)
 }
 
 func (app *application) registerUserForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.NewForm(nil),
+	})
 }

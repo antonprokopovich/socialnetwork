@@ -1,35 +1,57 @@
 {{template "base" .}}
 
-{{define "firstname"}}Create a New User{{end}}
+{{define "title"}}Create a New User{{end}}
 
 {{define  "main"}}
     <form action="/user/register" method="POST">
+        {{with .Form}}
             <div>
                 <label>FirstName:</label>
-                <input type="text" name="first_name">
+                {{with .Errors.Get "first_name"}}
+                    <label class='error'>{{.}}</label>
+                {{end}}
+                <input type="text" name="first_name" value='{{.Get "first_name"}}'>
             </div>
             <div>
                 <label>LastName:</label>
-                <input type="text" name="last_name">
+                {{with .Errors.Get "last_name"}}
+                    <label class='error'>{{.}}</label>
+                {{end}}
+                <input type="text" name="last_name", value='{{.Get "last_name"}}'>
             </div>
             <div>
                 <label>Age:</label>
-                <input type="text" name="age">
+                <select name="age">
+                    {{range $i, $e := seq 18 99}}
+                        <option value="{{$e}}">{{$e}}</option>
+                    {{end}}
+                </select>
             </div>
             <label for="gender">Gender:</label>
-              <input type='radio' name='gender' value='male'> Male
-              <input type='radio' name='gender' value='female'> Female
+            {{with .Errors.Get "gender"}}
+                <label class='error'>{{.}}</label>
+            {{end}}
+            {{$exp := or (.Get "gender") "male"}}
+              <input type='radio' name='gender' value='male' {{if (eq $exp "male")}}checked{{end}}> Male
+              <input type='radio' name='gender' value='female' {{if (eq $exp "female")}}checked{{end}}> Female
             </select>
             <div>
                 <label>City:</label>
-                <input type="text" name="city">
+                {{with .Errors.Get "city"}}
+                    <label class='error'>{{.}}</label>
+                {{end}}
+                <input type="text" name="city", value='{{.Get "city"}}'>
             </div>
             <div>
                 <label for="interests">Interests:</label>
+                {{with .Errors.Get "interests"}}
+                    <label class='error'>{{.}}</label>
+                {{end}}
                 <textarea name="interests" id="interests"></textarea>
             </div>
             <div>
                 <input type="submit" value="Register">
             </div>
+        {{end}}
 </form>
 {{end}}

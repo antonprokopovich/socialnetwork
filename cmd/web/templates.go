@@ -4,11 +4,14 @@ import (
 	"html/template"
 	"path/filepath"
 	"social-network/internal/models"
+	"social-network/pkg/forms"
 	"time"
 )
 
 type templateData struct {
 	CurrentYear int
+	Flash       string
+	Form        *forms.Form
 	User        *models.User
 	Users       []*models.User
 }
@@ -18,11 +21,18 @@ func humanDate(t time.Time) string {
 	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
-// Initialize a template.FuncMap object and store it in a global variable. This is essentially
-// a string-keyed map which acts as a lookup between the names of our custom template
-// functions and the functions themselves.
+func seq(start, end int) []int {
+	var res []int
+	for i := start; i <= end; i++ {
+		res = append(res, i)
+	}
+
+	return res
+}
+
 var functions = template.FuncMap{
 	"humanDate": humanDate,
+	"seq":       seq,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
