@@ -13,8 +13,13 @@ func (app application) routes() http.Handler {
 	mux := pat.New()
 
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
+
 	mux.Get("/user/register", dynamicMiddleware.ThenFunc(app.registerUserForm))
 	mux.Post("/user/register", dynamicMiddleware.ThenFunc(app.registerUser))
+	mux.Get("/user/login", dynamicMiddleware.ThenFunc(app.loginUserForm))
+	mux.Post("/user/login", dynamicMiddleware.ThenFunc(app.loginUser))
+	mux.Post("/user/logout", dynamicMiddleware.ThenFunc(app.logoutUser))
+
 	mux.Get("/user/:id", dynamicMiddleware.ThenFunc(app.showUser))
 	mux.Post("/user/:id", dynamicMiddleware.ThenFunc(app.showUser))
 

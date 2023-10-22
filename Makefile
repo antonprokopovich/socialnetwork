@@ -1,5 +1,5 @@
 # Include .env vars
-include .envrc
+include .env
 
 # ==================================================================================== #
 # HELPERS
@@ -22,12 +22,12 @@ confirm:
 ## run/web: run the cmd/web application
 .PHONY: run/api
 run/api:
-	go run ./cmd/api -db-dsn=${MEMO_DB_URL}
+	go run ./cmd/api -db-dsn=${DB_URL}
 
 ## db/psql: connect to the database using psql
 .PHONY: db/psql
 db/psql:
-	psql ${MEMO_DB_URL}
+	psql ${DB_URL}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
@@ -39,7 +39,7 @@ db/migrations/new:
 .PHONY: db/migrations/up
 db/migrations/up: confirm
 	@echo 'Running up migrations...'
-	migrate -path ./migrations -database ${MEMO_DB_URL} up
+	migrate -path ./migrations -database ${DB_URL} up
 
 .PHONY: generate
 generate:

@@ -20,6 +20,20 @@
                 <input type="text" name="last_name", value='{{.Get "last_name"}}'>
             </div>
             <div>
+                <label>Email:</label>
+                {{with .Errors.Get "email"}}
+                    <label class="error">{{.}}</label>
+                {{end}}
+                <input type="email" name="email" value="{{.Get "email"}}">
+            </div>
+            <div>
+                <label>Password:</label>
+                {{with .Errors.Get "password"}}
+                    <label class="error">{{.}}</label>
+                {{end}}
+                <input type="password" name="password" id="password">
+            </div>
+            <div>
                 <label>Age:</label>
                 <select name="age">
                     {{range $i, $e := seq 18 99}}

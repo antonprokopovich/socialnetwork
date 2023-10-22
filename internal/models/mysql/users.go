@@ -3,7 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"errors"
+	"github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 	"social-network/internal/models"
+	"strings"
 )
 
 type UserModel struct {
@@ -11,14 +14,26 @@ type UserModel struct {
 }
 
 func (m *UserModel) Insert(
-	firstName, lastName, interests, city string, gender models.Gender, age uint32,
+	firstName, lastName, interests, city, email, password string, gender models.Gender, age uint32,
 ) (int, error) {
 
-	stmt := `INSERT INTO users (created_at, first_name, last_name, age, gender, interests, city)
-	VALUES(UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?)`
-
-	result, err := m.DB.Exec(stmt, firstName, lastName, age, gender, interests, city)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
+		return 0, err
+	}
+
+	stmt := `INSERT INTO users (created_at, first_name, last_name, age, gender, interests, city, email, hashed_password)
+	VALUES(UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	result, err := m.DB.Exec(stmt, firstName, lastName, age, gender, interests, city, email, string(hashedPassword))
+	if err != nil {
+		var mySQLError *mysql.MySQLError
+		if errors.As(err, &mySQLError) {
+			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
+				return 0, models.ErrDuplicateEmail
+			}
+		}
+
 		return 0, err
 	}
 
@@ -31,15 +46,29 @@ func (m *UserModel) Insert(
 }
 
 func (m *UserModel) Get(id int) (*models.User, error) {
-	stmt := `SELECT id, created_at, first_name, last_name, age, gender, interests, city FROM users
-	WHERE id = ?`
+	stmt := `
+	SELECT 
+	       id, 
+		   created_at, 
+		   first_name, 
+		   last_name, 
+		   age, 
+		   gender, 
+		   interests, 
+		   city, 
+		   email, 
+		   hashed_password 
+	FROM 
+	       users
+	WHERE 
+	       id = ?`
 
 	s := &models.User{}
 
 	row := m.DB.QueryRow(stmt, id)
 
 	err := row.Scan(
-		&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age, &s.Gender, &s.Interests, &s.City,
+		&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age, &s.Gender, &s.Interests, &s.City, &s.Email, &s.HashedPassword,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -53,8 +82,21 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 }
 
 func (m UserModel) Latest() ([]*models.User, error) {
-	stmt := `SELECT id, created_at, first_name, last_name, age, gender, interests, city FROM users
-    ORDER BY created_at DESC LIMIT 10`
+	stmt := `
+		SELECT 
+			 id, 
+			 created_at, 
+			 first_name, 
+			 last_name, 
+			 age, 
+			 gender, 
+			 interests, 
+			 city, 
+			 email,
+			 hashed_password 
+		FROM 
+			 users
+		ORDER BY created_at DESC LIMIT 10`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
@@ -69,7 +111,7 @@ func (m UserModel) Latest() ([]*models.User, error) {
 		s := &models.User{}
 
 		err = rows.Scan(
-			&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age, &s.Gender, &s.Interests, &s.City,
+			&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age, &s.Gender, &s.Interests, &s.City, &s.Email, &s.HashedPassword,
 		)
 		if err != nil {
 			return nil, err
@@ -82,4 +124,34 @@ func (m UserModel) Latest() ([]*models.User, error) {
 	}
 
 	return users, nil
+}
+
+// Authenticate verifies a user exists with the provided email address and password.
+// If the user exists the relevant user ID is returned.
+func (m *UserModel) Authenticate(email, password string) (int, error) {
+	var (
+		id       int
+		hashedPw []byte
+	)
+
+	stmt := `SELECT id, hashed_password FROM users WHERE email = ?`
+	row := m.DB.QueryRow(stmt, email)
+
+	if err := row.Scan(&id, &hashedPw); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	if err := bcrypt.CompareHashAndPassword(hashedPw, []byte(password)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	return id, nil
 }
