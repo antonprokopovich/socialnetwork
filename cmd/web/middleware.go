@@ -53,18 +53,6 @@ func (app *application) requireAuth(next http.Handler) http.Handler {
 	})
 }
 
-// noSurf uses customized CSRF cookie with the Secure, Path and HttpOnly flags set.
-func noSurf(next http.Handler) http.Handler {
-	csrfHandler := nosurf.New(next)
-	csrfHandler.SetBaseCookie(http.Cookie{
-		HttpOnly: true,
-		Path:     "/",
-		Secure:   true,
-	})
-
-	return csrfHandler
-}
-
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if authenticatedUserID value exists in the session. If this *is not present*
@@ -79,8 +67,8 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		// authenticatedUserID. If no matching record is found,
 		// or the current user has been deactivated, remove the (invalid) authenticatedUserID value
 		// from their session and call the next handler in the chain as normal.
-		user, err := app.users.Get(app.session.GetInt(r, "authenticatedUserID"))
-		if errors.Is(err, models.ErrNoRecord) || !user.Active {
+		_, err := app.users.Get(app.session.GetInt(r, "authenticatedUserID"))
+		if errors.Is(err, models.ErrNoRecord)  {
 			app.session.Remove(r, "authenticatedUserID")
 			next.ServeHTTP(w, r)
 			return

@@ -9,11 +9,12 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	Flash       string
-	Form        *forms.Form
-	User        *models.User
-	Users       []*models.User
+	CurrentYear     int
+	Flash           string
+	Form            *forms.Form
+	IsAuthenticated bool
+	User            *models.User
+	Users           []*models.User
 }
 
 // humanDate returns a nicely formatted human-readable string representation of time.Time.
