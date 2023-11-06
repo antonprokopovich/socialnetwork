@@ -63,12 +63,21 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 	WHERE 
 	       id = ?`
 
-	s := &models.User{}
+	user := &models.User{}
 
 	row := m.DB.QueryRow(stmt, id)
 
 	err := row.Scan(
-		&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age, &s.Gender, &s.Interests, &s.City, &s.Email, &s.HashedPassword,
+		&user.ID,
+		&user.CreatedAt,
+		&user.FirstName,
+		&user.LastName,
+		&user.Age,
+		&user.Gender,
+		&user.Interests,
+		&user.City,
+		&user.Email,
+		&user.HashedPassword,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -78,7 +87,55 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 		}
 	}
 
-	return s, nil
+	// Querying friend requests
+	stmt = `
+	SELECT 
+	       sender_user_id
+	FROM 
+	       friend_requests
+	WHERE 
+	       recipient_user_id = ?`
+
+	row = m.DB.QueryRow(stmt, id)
+	err = row.Scan(
+		&user.FiendRequests,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+	// TODO
+
+	// Querying friend list
+	stmt = `
+	SELECT U.first_name AS friend_name
+	FROM friendships AS F
+	JOIN users AS U ON F.user_1_id = U.id
+	WHERE F.user_2_id = ?
+		UNION
+	SELECT U.first_name AS friend_name
+	FROM friendships AS F
+	JOIN users AS U ON F.user_2_id = U.id
+	WHERE F.user_1_id = ?;`
+
+	row = m.DB.QueryRow(stmt, id)
+	err = row.Scan(
+		&user.Friends,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+
+	// TODO
+
+	return user, nil
 }
 
 func (m UserModel) Latest() ([]*models.User, error) {

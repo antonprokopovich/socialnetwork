@@ -15,10 +15,11 @@ import (
 )
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	session       *sessions.Session
-	users         *mysql.UserModel
+	errorLog *log.Logger
+	infoLog  *log.Logger
+	session  *sessions.Session
+	users    *mysql.UserModel
+
 	templateCache map[string]*template.Template
 }
 

@@ -44,6 +44,29 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// TODO
+func (app *application) sendFriendRequest(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+
+		return
+	}
+
+	u, err := app.users.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+
+		return
+	}
+}
+
+func (app *application) acceptFriendRequest(w http.ResponseWriter, r *http.Request) {}
+
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		app.clientError(w, http.StatusBadRequest)
