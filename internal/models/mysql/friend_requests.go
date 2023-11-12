@@ -29,7 +29,16 @@ func (m *FriendRequestModel) Insert(senderUserID, recipientUserID int) error {
 	return nil
 }
 
-// TODO test
+func (m *FriendRequestModel) Delete(senderUserID, recipientUserID int) error {
+	stmt := `DELETE FROM friend_requests WHERE sender_user_id = ? AND recipient_user_id = ?`
+
+	if _, err := m.DB.Exec(stmt, senderUserID, recipientUserID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *FriendRequestModel) ListAllForRecipient(recipient int) ([]*models.FriendRequest, error) {
 	stmt := `
 	SELECT 

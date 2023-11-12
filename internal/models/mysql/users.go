@@ -12,7 +12,8 @@ import (
 type UserModel struct {
 	DB *sql.DB
 
-	RequestsModel FriendRequestModel
+	RequestsModel   FriendRequestModel
+	FriendshipModel FriendshipModel
 }
 
 func (m *UserModel) Insert(

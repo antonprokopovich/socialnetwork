@@ -71,9 +71,28 @@ func (app *application) sendFriendRequest(w http.ResponseWriter, r *http.Request
 	http.Redirect(w, r, fmt.Sprintf("/user/%d", id), http.StatusSeeOther)
 }
 
-// TODO
 func (app *application) acceptFriendRequest(w http.ResponseWriter, r *http.Request) {
+	senderUserID, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || senderUserID < 1 {
+		app.notFound(w)
 
+		return
+	}
+
+	recipientUserID := app.session.Get(r, "authenticatedUserID").(int)
+
+	// TODO single transaction:
+	err = app.db.Friendship.Insert(senderUserID, recipientUserID)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	err = app.db.FriendRequest.Delete(senderUserID, recipientUserID)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/user/%d", recipientUserID), http.StatusSeeOther)
 }
 
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {

@@ -2,15 +2,13 @@ package mysql
 
 import (
 	"database/sql"
-	"errors"
-	"social-network/internal/models"
 )
 
 type FriendshipModel struct {
 	DB *sql.DB
 }
 
-func (m *FriendshipModel) Insert(firstUserID, secondUserID int64) error {
+func (m *FriendshipModel) Insert(firstUserID, secondUserID int) error {
 	stmt := `INSERT INTO friendships (created_at, user_1_id, user_2_id)
 	VALUES(UTC_TIMESTAMP(), ?, ?)`
 
@@ -21,17 +19,26 @@ func (m *FriendshipModel) Insert(firstUserID, secondUserID int64) error {
 	return nil
 }
 
-func (m *FriendshipModel) Get(id int) (*models.Friendship, error) {
+func (m *FriendshipModel) Delete(firstUserID, secondUserID int) error {
+	stmt := `DELETE FROM friendships WHERE (user_1_id = ? AND user_2_id = ?) OR (user_2_id = ? AND user_1_id = ?)`
+
+	if _, err := m.DB.Exec(stmt, firstUserID, secondUserID, firstUserID, secondUserID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/*func (m *FriendshipModel) Get(id int) (*models.Friendship, error) {
 	stmt := `
-	SELECT 
-	       id, 
-		   created_at, 
-		   user_1_id, 
+	SELECT
+		   created_at,
+		   user_1_id,
 		   user_2_id
-	FROM 
+	FROM
 	       friendships
-	WHERE 
-	       id = ?`
+	WHERE
+	       user_1_id = ? AND user_2_id = ?`
 
 	friendship := &models.Friendship{}
 
@@ -53,3 +60,4 @@ func (m *FriendshipModel) Get(id int) (*models.Friendship, error) {
 
 	return friendship, nil
 }
+*/
