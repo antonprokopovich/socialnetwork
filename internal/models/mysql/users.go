@@ -11,6 +11,8 @@ import (
 
 type UserModel struct {
 	DB *sql.DB
+
+	RequestsModel FriendRequestModel
 }
 
 func (m *UserModel) Insert(
@@ -45,6 +47,7 @@ func (m *UserModel) Insert(
 	return int(id), nil
 }
 
+// TODO query friends and friend requests
 func (m *UserModel) Get(id int) (*models.User, error) {
 	stmt := `
 	SELECT 
@@ -88,29 +91,17 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 	}
 
 	// Querying friend requests
-	stmt = `
-	SELECT 
-	       sender_user_id
-	FROM 
-	       friend_requests
-	WHERE 
-	       recipient_user_id = ?`
-
-	row = m.DB.QueryRow(stmt, id)
-	err = row.Scan(
-		&user.FiendRequests,
-	)
+	friendRequests, err := m.RequestsModel.ListAllForRecipient(id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
-	// TODO
+
+	user.FiendRequests = friendRequests
+
+	// TODO friends list
 
 	// Querying friend list
-	stmt = `
+	/*stmt = `
 	SELECT U.first_name AS friend_name
 	FROM friendships AS F
 	JOIN users AS U ON F.user_1_id = U.id
@@ -131,7 +122,7 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 		} else {
 			return nil, err
 		}
-	}
+	}*/
 
 	// TODO
 

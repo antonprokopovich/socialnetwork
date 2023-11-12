@@ -18,7 +18,8 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	session  *sessions.Session
-	users    *mysql.UserModel
+
+	db *mysql.Model
 
 	templateCache map[string]*template.Template
 }
@@ -47,11 +48,20 @@ func main() {
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 
+	friedRequestModel := mysql.FriendRequestModel{DB: db}
+	friendshipModel := mysql.FriendshipModel{DB: db}
+	userModel := mysql.UserModel{DB: db, RequestsModel: friedRequestModel}
+
 	app := &application{
-		errorLog:      errorLog,
-		infoLog:       infoLog,
-		session:       session,
-		users:         &mysql.UserModel{DB: db},
+		errorLog: errorLog,
+		infoLog:  infoLog,
+		session:  session,
+		db: &mysql.Model{
+			FriendRequest: friedRequestModel,
+			Friendship:    friendshipModel,
+			User:          userModel,
+		},
+
 		templateCache: templateCache,
 	}
 

@@ -11,9 +11,10 @@ const (
 )
 
 var (
-	ErrNoRecord           = errors.New("models: no matching record found")
-	ErrInvalidCredentials = errors.New("models: invalid credentials")
-	ErrDuplicateEmail     = errors.New("models: duplicate email")
+	ErrNoRecord               = errors.New("models: no matching record found")
+	ErrInvalidCredentials     = errors.New("models: invalid credentials")
+	ErrDuplicateEmail         = errors.New("models: duplicate email")
+	ErrDuplicateFriendRequest = errors.New("models: duplicate friend request")
 )
 
 type Gender string
@@ -32,7 +33,7 @@ type User struct {
 	// Friends - список ID пользователей, которых данный пользователь добавил в друзья.
 	Friends []int64 `json:"friends,omitempty"`
 	// FiendRequests - список ID пользователей, которые отправили данному пользователю запрос на добавление в друзья.
-	FiendRequests []int64 `json:"friend_requests,omitempty"`
+	FiendRequests []*FriendRequest `json:"friend_requests,omitempty"`
 }
 
 type Friendship struct {
@@ -43,7 +44,6 @@ type Friendship struct {
 }
 
 type FriendRequest struct {
-	ID              int64     `json:"id,omitempty"`
 	CreatedAt       time.Time `json:"created_at"`
 	SenderUserID    string    `json:"user_1_id,omitempty"`
 	RecipientUserID string    `json:"user_2_id,omitempty"`

@@ -10,7 +10,7 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	users, err := app.users.Latest()
+	users, err := app.db.User.Latest()
 	if err != nil {
 		app.serverError(w, err)
 
@@ -28,7 +28,7 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := app.users.Get(id)
+	u, err := app.db.User.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -44,7 +44,6 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// TODO
 func (app *application) sendFriendRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
@@ -53,19 +52,29 @@ func (app *application) sendFriendRequest(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	u, err := app.users.Get(id)
+	senderUserID := app.session.Get(r, "authenticatedUserID").(int)
+
+	err = app.db.FriendRequest.Insert(senderUserID, id)
 	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
-			app.notFound(w)
+		if errors.Is(err, models.ErrDuplicateFriendRequest) {
+			app.session.Put(r, "flash", "Friend request has already been sent.")
+			http.Redirect(w, r, fmt.Sprintf("/user/%d", id), http.StatusSeeOther)
+
+			return
 		} else {
 			app.serverError(w, err)
+			return
 		}
-
-		return
 	}
+
+	app.session.Put(r, "flash", "Friend request sent.")
+	http.Redirect(w, r, fmt.Sprintf("/user/%d", id), http.StatusSeeOther)
 }
 
-func (app *application) acceptFriendRequest(w http.ResponseWriter, r *http.Request) {}
+// TODO
+func (app *application) acceptFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+}
 
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -93,7 +102,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	ageInput := form.Get("age")
 	age, _ := strconv.Atoi(ageInput)
 
-	_, err := app.users.Insert(
+	_, err := app.db.User.Insert(
 		form.Get("first_name"),
 		form.Get("last_nae"),
 		form.Get("interests"),
@@ -139,7 +148,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := forms.NewForm(r.PostForm)
-	id, err := app.users.Authenticate(form.Get("email"), form.Get("password"))
+	id, err := app.db.User.Authenticate(form.Get("email"), form.Get("password"))
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			form.Errors.Add("generic", "Email or Password is incorrect")
