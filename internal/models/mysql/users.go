@@ -99,33 +99,19 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 
 	user.FiendRequests = friendRequests
 
-	// TODO friends list
-
-	// Querying friend list
-	/*stmt = `
-	SELECT U.first_name AS friend_name
-	FROM friendships AS F
-	JOIN users AS U ON F.user_1_id = U.id
-	WHERE F.user_2_id = ?
-		UNION
-	SELECT U.first_name AS friend_name
-	FROM friendships AS F
-	JOIN users AS U ON F.user_2_id = U.id
-	WHERE F.user_1_id = ?;`
-
-	row = m.DB.QueryRow(stmt, id)
-	err = row.Scan(
-		&user.Friends,
-	)
+	friendships, err := m.FriendshipModel.ListAllForUser(id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		} else {
-			return nil, err
-		}
-	}*/
+		return nil, err
+	}
 
-	// TODO
+	// TODO refactor?
+	for _, fr := range friendships {
+		if fr.User1ID != id {
+			user.Friends = append(user.Friends, fr.User1ID)
+		} else {
+			user.Friends = append(user.Friends, fr.User2ID)
+		}
+	}
 
 	return user, nil
 }

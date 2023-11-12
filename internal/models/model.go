@@ -31,20 +31,20 @@ type User struct {
 	Email          string    `json:"email,omitempty"`
 	HashedPassword string    `json:"hashed_password,omitempty"`
 	// Friends - список ID пользователей, которых данный пользователь добавил в друзья.
-	Friends []int64 `json:"friends,omitempty"`
-	// FiendRequests - список ID пользователей, которые отправили данному пользователю запрос на добавление в друзья.
+	Friends []int `json:"friends,omitempty"`
+	// FiendRequests - список пользователей, которые отправили данному пользователю запрос на добавление в друзья.
 	FiendRequests []*FriendRequest `json:"friend_requests,omitempty"`
 }
 
 type Friendship struct {
 	ID        int64     `json:"id,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
-	User1ID   string    `json:"user_1_id,omitempty"`
-	User2ID   string    `json:"user_2_id,omitempty"`
+	User1ID   int       `json:"user_1_id,omitempty"`
+	User2ID   int       `json:"user_2_id,omitempty"`
 }
 
 type FriendRequest struct {
 	CreatedAt       time.Time `json:"created_at"`
-	SenderUserID    string    `json:"user_1_id,omitempty"`
-	RecipientUserID string    `json:"user_2_id,omitempty"`
+	SenderUserID    int       `json:"user_1_id,omitempty"`
+	RecipientUserID int       `json:"user_2_id,omitempty"`
 }

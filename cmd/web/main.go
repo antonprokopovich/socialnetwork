@@ -50,7 +50,7 @@ func main() {
 
 	friedRequestModel := mysql.FriendRequestModel{DB: db}
 	friendshipModel := mysql.FriendshipModel{DB: db}
-	userModel := mysql.UserModel{DB: db, RequestsModel: friedRequestModel}
+	userModel := mysql.UserModel{DB: db, RequestsModel: friedRequestModel, FriendshipModel: friendshipModel}
 
 	app := &application{
 		errorLog: errorLog,
