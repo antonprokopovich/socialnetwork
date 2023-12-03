@@ -8,16 +8,3 @@ CREATE TABLE IF NOT EXISTS users (
     interests text,
     city text NOT NULL
 );
-
-# Test data
-
-INSERT INTO users (id, created_at, first_name, last_name, age, gender, interests, city) VALUES (
-    0,
-    CURRENT_TIMESTAMP,
-    'John',
-    'Doe',
-    18,
-    'male',
-    'sports, books, science',
-    'London'
-);
