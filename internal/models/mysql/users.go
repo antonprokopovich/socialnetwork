@@ -137,7 +137,10 @@ func (m UserModel) List(filter ListFilter) ([]*models.User, error) {
 			 users
 		WHERE first_name LIKE ? AND last_name LIKE ?`
 
-	rows, err := m.DB.Query(stmt, filter.FirstName, filter.LastName)
+	firstName := filter.FirstName + "%"
+	lastName := filter.LastName + "%"
+
+	rows, err := m.DB.Query(stmt, firstName, lastName)
 	if err != nil {
 		return nil, err
 	}
