@@ -3,12 +3,16 @@
 {{define "title"}}Home{{end}}
 
 {{define "main"}}
+    <form action="/users/search" method="GET">
+        <input type="text" name="query" placeholder="Search users by full name. Ex.: John Doe">
+        <button type="submit" style="margin-bottom: 50px;">Search</button>
+    </form>
     <h2>Latest Registered Users</h2>
     {{if .Users}}
         <table>
             <tr>
-                <th>FirstName</th>
-                <th>CreatedAt</th>
+                <th>First Name</th>
+                <th>Created At</th>
                 <th>ID</th>
             </tr>
             {{range .Users}}

@@ -48,7 +48,6 @@ func (m *UserModel) Insert(
 	return int(id), nil
 }
 
-// TODO query friends and friend requests
 func (m *UserModel) Get(id int) (*models.User, error) {
 	stmt := `
 	SELECT 
@@ -114,6 +113,57 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+type ListFilter struct {
+	FirstName string
+	LastName  string
+}
+
+func (m UserModel) List(filter ListFilter) ([]*models.User, error) {
+	stmt := `
+		SELECT 
+			 id, 
+			 created_at, 
+			 first_name, 
+			 last_name, 
+			 age, 
+			 gender, 
+			 interests, 
+			 city, 
+			 email,
+			 hashed_password 
+		FROM 
+			 users
+		WHERE first_name LIKE ? AND last_name LIKE ?`
+
+	rows, err := m.DB.Query(stmt, filter.FirstName, filter.LastName)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []*models.User
+
+	for rows.Next() {
+		s := &models.User{}
+
+		err = rows.Scan(
+			&s.ID, &s.CreatedAt, &s.FirstName, &s.LastName, &s.Age,
+			&s.Gender, &s.Interests, &s.City, &s.Email, &s.HashedPassword,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, s)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (m UserModel) Latest() ([]*models.User, error) {

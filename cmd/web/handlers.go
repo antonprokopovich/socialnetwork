@@ -5,9 +5,13 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"social-network/internal/models"
+	"social-network/internal/models/mysql"
 	"social-network/pkg/forms"
 	"strconv"
+	"strings"
 )
+
+var ErrSearchByFullName = errors.New("should provide both fist name and last name")
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	users, err := app.db.User.Latest()
@@ -41,6 +45,38 @@ func (app *application) showUser(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, r, "show.page.tmpl", &templateData{
 		User: u,
+	})
+}
+
+func (app *application) findUsers(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		return
+	}
+
+	data := strings.Split(query, " ")
+	if len(data) < 2 {
+		app.serverError(w, ErrSearchByFullName)
+	}
+
+	filter := mysql.ListFilter{
+		FirstName: data[0],
+		LastName:  data[1],
+	}
+
+	users, err := app.db.User.List(filter)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+
+		return
+	}
+
+	app.render(w, r, "search.result.page.tmpl", &templateData{
+		SearchResults: users,
 	})
 }
 

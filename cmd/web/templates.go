@@ -16,6 +16,8 @@ type templateData struct {
 	AuthenticatedUserID int
 	User                *models.User
 	Users               []*models.User
+
+	SearchResults []*models.User
 }
 
 // humanDate returns a nicely formatted human-readable string representation of time.Time.

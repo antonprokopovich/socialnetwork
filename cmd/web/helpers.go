@@ -25,6 +25,10 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+func (app *application) badRequest(w http.ResponseWriter) {
+	app.clientError(w, http.StatusBadRequest)
+}
+
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}

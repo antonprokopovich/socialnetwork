@@ -1,0 +1,26 @@
+{{template "base" .}}
+
+{{define "title"}}Search results{{end}}
+
+{{define "main"}}
+    <style>
+        .left-align {
+            text-align: left !important;
+        }
+    </style>
+    <h2>Search results</h2>
+    {{if .SearchResults}}
+        <table class="left-align">
+            <tr>
+                <th>Name</th>
+            </tr>
+            {{range .SearchResults}}
+                <tr>
+                    <td class="left-align"><a href="/user/{{.ID}}">{{.FirstName}} {{.LastName}}</a></td>
+                </tr>
+            {{end}}
+        </table>
+    {{else}}
+        <p>No matching results</p>
+    {{end}}
+{{end}}

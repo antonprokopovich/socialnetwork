@@ -23,6 +23,8 @@ func (app application) routes() http.Handler {
 	mux.Get("/user/:id", dynamicMiddleware.ThenFunc(app.showUser))
 	mux.Post("/user/:id", dynamicMiddleware.ThenFunc(app.showUser))
 
+	mux.Get("/users/search", dynamicMiddleware.ThenFunc(app.findUsers))
+
 	mux.Post("/user/:id/add", dynamicMiddleware.ThenFunc(app.sendFriendRequest))
 	mux.Post("/user/:id/accept", dynamicMiddleware.ThenFunc(app.acceptFriendRequest))
 
