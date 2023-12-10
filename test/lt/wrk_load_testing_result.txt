@@ -1,0 +1,115 @@
+BEFORE INDEX
+
+1)
+wrk -t 1 -c 1 -d 1s "https://localhost:4000/users/search?query=A+A"
+Running 1s test @ https://localhost:4000/users/search?query=A+A
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   538.04ms    0.00us 538.04ms  100.00%
+    Req/Sec     1.00      0.00     1.00    100.00%
+  1 requests in 1.01s, 1.42MB read
+Requests/sec:      0.99
+Transfer/sec:      1.41MB
+
+
+2)
+wrk -t 1 -c 10 -d 2s "https://localhost:4000/users/search?query=A+A"
+Running 2s test @ https://localhost:4000/users/search?query=A+A
+  1 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.07s    15.77ms   1.10s    80.00%
+    Req/Sec     8.50      0.71     9.00    100.00%
+  10 requests in 2.02s, 14.25MB read
+
+3)
+wrk --latency -t 5 -c 10 -d 12s "https://localhost:4000/users/search?query=A+A"
+
+Running 12s test @ https://localhost:4000/users/search?query=A+A
+  5 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.13s    43.21ms   1.25s    61.00%
+    Req/Sec     2.56      3.62    10.00     79.37%
+  Latency Distribution
+     50%    1.13s
+     75%    1.17s
+     90%    1.18s
+     99%    1.25s
+  100 requests in 12.10s, 142.49MB read
+Requests/sec:      8.27
+Transfer/sec:     11.78MB
+
+4)
+wrk --latency -t 8 -c 15 -d 3m "https://localhost:4000/users/search?query=A+A"
+
+Running 3m test @ https://localhost:4000/users/search?query=A+A
+  8 threads and 15 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.32s   105.53ms   1.49s    86.31%
+    Req/Sec     0.02      0.15     1.00     97.79%
+  Latency Distribution
+     50%    1.35s
+     75%    1.39s
+     90%    1.41s
+     99%    1.45s
+  1088 requests in 3.00m, 1.51GB read
+Requests/sec:      6.04
+Transfer/sec:      8.61MB
+
+AFTER
+1)
+wrk -t 1 -c 1 -d 1s "https://localhost:4000/users/search?query=A+A"
+
+Running 1s test @ https://localhost:4000/users/search?query=A+A
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   318.07ms   11.03ms 326.00ms   66.67%
+    Req/Sec     2.67      0.58     3.00     66.67%
+  3 requests in 1.01s, 4.27MB read
+Requests/sec:      2.97
+Transfer/sec:      4.24MB
+anton@macbook social-network % wrk -t 1 -c 5 -d 2s "https://localhost:4000/users/search?query=A+A"
+
+2)
+wrk -t 5 -c 10 -d 1s "https://localhost:4000/users/search?query=A+A"
+
+Running 1s test @ https://localhost:4000/users/search?query=A+A
+  5 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   870.02ms    7.07ms 881.86ms   80.00%
+    Req/Sec     2.00      0.00     2.00    100.00%
+  10 requests in 1.01s, 14.25MB read
+Requests/sec:      9.90
+Transfer/sec:     14.10MB
+
+3)
+wrk --latency -t 5 -c 10 -d 9s "https://localhost:4000/users/search?query=A+A"
+Running 9s test @ https://localhost:4000/users/search?query=A+A
+  5 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   866.13ms   27.27ms 935.37ms   72.00%
+    Req/Sec     2.48      2.03    10.00     92.59%
+  Latency Distribution
+     50%  871.87ms
+     75%  883.83ms
+     90%  894.23ms
+     99%  935.37ms
+  100 requests in 9.09s, 142.49MB read
+Requests/sec:     11.00
+Transfer/sec:     15.67MB
+
+4)
+wrk --latency -t 2 -c 7 -d 2m "https://localhost:4000/users/search?query=A+A"
+Running 2m test @ https://localhost:4000/users/search?query=A+A
+  2 threads and 7 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   740.44ms   46.25ms 975.23ms   70.27%
+    Req/Sec     4.49      3.84    20.00     92.57%
+  Latency Distribution
+     50%  734.70ms
+     75%  765.98ms
+     90%  804.79ms
+     99%  858.08ms
+  972 requests in 2.00m, 1.35GB read
+Requests/sec:      8.09
+Transfer/sec:     11.53MB
+
